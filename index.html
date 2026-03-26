@@ -15,32 +15,43 @@
 <div class="controls">
   <input type="file" id="fileInput">
   <input type="text" id="search" placeholder="Search Agent..." onkeyup="filterTable()">
+
   <button onclick="processFile()">Upload</button>
-  <button onclick="openAdmin()">Add Agent Details</button>
-  <button onclick="showAgents()">View Agents</button>
   <button onclick="resetPage()">Reset</button>
+
+  <!-- 🔥 Roster Button -->
+  <button class="roster-btn" onclick="openRoster()">Roster</button>
 </div>
 
-<!-- Admin Panel -->
-<div id="adminPanel" class="modal">
+<!-- 🔐 ROSTER PANEL -->
+<div id="rosterPanel" class="modal">
   <div class="modal-content">
-    <h2>Add Agent</h2>
 
+    <h2>Roster Management</h2>
+
+    <!-- Manual -->
     <input id="aid" placeholder="Employee ID"><br>
     <input id="aname" placeholder="Agent Name"><br>
     <input id="shift" placeholder="Shift (07:00)"><br>
     <input id="weekoff" placeholder="Week Off"><br>
 
-    <button onclick="saveAgent()">Save</button>
+    <button onclick="saveAgent()">Add Agent</button>
 
     <hr>
 
+    <!-- Bulk -->
     <h3>Bulk Upload</h3>
     <input type="file" id="bulkFile"><br>
     <button onclick="bulkUpload()">Upload Excel</button>
 
+    <hr>
+
+    <!-- View -->
+    <button onclick="showAgents()">View Agents</button>
+
     <br><br>
-    <button onclick="closeAdmin()">Close</button>
+    <button onclick="closeRoster()">Close</button>
+
   </div>
 </div>
 
