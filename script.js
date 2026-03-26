@@ -7,36 +7,30 @@ const reader = new FileReader();
 reader.onload = function(e){
 const data = new Uint8Array(e.target.result);
 const workbook = XLSX.read(data, {type:'array'});
-
-// Sheet read
 const sheet = workbook.Sheets[workbook.SheetNames[0]];
 
-// 👉 RAW data as array
+// RAW DATA
 let raw = XLSX.utils.sheet_to_json(sheet, {header:1});
 
-// ❗ FIRST ROW DELETE (AUTO FIX)
+// REMOVE FIRST ROW
 raw.shift();
 
-// 👉 Convert back to JSON
-const headers = raw[0];
-const rows = raw.slice(1);
+// GET HEADERS
+let headers = raw[0].map(h => h.toString().toLowerCase().replace(/ /g,''));
 
-let json = rows.map(row => {
-  let obj = {};
-  headers.forEach((h,i)=>{
-    obj[h] = row[i];
-  });
-  return obj;
-});
+// FIND COLUMN INDEX
+let idIndex = headers.findIndex(h => h.includes("username") || h.includes("agent"));
+let dateIndex = headers.findIndex(h => h.includes("datetime") || h.includes("date"));
+let typeIndex = headers.findIndex(h => h.includes("event"));
 
 let result = {};
 
-json.forEach(row=>{
-let id = row["UserName"];
-let dt = new Date(row["DateTime"]);
-let type = row["Event Type"];
+raw.slice(1).forEach(row=>{
+let id = row[idIndex];
+let dt = new Date(row[dateIndex]);
+let type = (row[typeIndex] || "").toString().toLowerCase();
 
-if(type === "LOGIN"){
+if(type.includes("login")){
 let date = dt.toISOString().split('T')[0];
 let time = dt.toTimeString().split(" ")[0];
 
