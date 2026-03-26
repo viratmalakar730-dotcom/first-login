@@ -12,19 +12,50 @@ function closeAdmin(){
 document.getElementById("adminPanel").style.display="none";
 }
 
-// 💾 Save Agent
+// 💾 Save Agent (Manual)
 function saveAgent(){
 let agents = JSON.parse(localStorage.getItem("agents")||"[]");
 
 agents.push({
-id:document.getElementById("aid").value,
-name:document.getElementById("aname").value,
-shift:document.getElementById("shift").value,
-weekoff:document.getElementById("weekoff").value
+id:aid.value,
+name:aname.value,
+shift:shift.value,
+weekoff:weekoff.value
 });
 
 localStorage.setItem("agents",JSON.stringify(agents));
 alert("Agent Saved");
+}
+
+// 📂 BULK UPLOAD
+function bulkUpload(){
+const file = document.getElementById('bulkFile').files[0];
+if(!file) return alert("Upload roster file");
+
+const reader = new FileReader();
+
+reader.onload = function(e){
+const data = new Uint8Array(e.target.result);
+const wb = XLSX.read(data,{type:'array'});
+const sheet = wb.Sheets[wb.SheetNames[0]];
+let json = XLSX.utils.sheet_to_json(sheet);
+
+let agents = JSON.parse(localStorage.getItem("agents")||"[]");
+
+json.forEach(row=>{
+agents.push({
+id: row["Employee ID"],
+name: row["Agent Name"],
+shift: row["Shift"],
+weekoff: row["Week Off"]
+});
+});
+
+localStorage.setItem("agents", JSON.stringify(agents));
+alert("Bulk Upload Success");
+};
+
+reader.readAsArrayBuffer(file);
 }
 
 // 📂 Excel Processing
@@ -40,11 +71,8 @@ const wb = XLSX.read(data,{type:'array'});
 const sheet = wb.Sheets[wb.SheetNames[0]];
 
 let raw = XLSX.utils.sheet_to_json(sheet,{header:1});
-
-// ❗ First row remove
 raw.shift();
 
-// Header normalize
 let headers = raw[0].map(h => h.toString().toLowerCase().replace(/ /g,''));
 
 let idIndex = headers.findIndex(h => h.includes("user"));
