@@ -24,11 +24,21 @@
 <div id="adminPanel" class="modal">
   <div class="modal-content">
     <h2>Add Agent</h2>
+
     <input id="aid" placeholder="Employee ID"><br>
     <input id="aname" placeholder="Agent Name"><br>
     <input id="shift" placeholder="Shift (07:00)"><br>
     <input id="weekoff" placeholder="Week Off"><br>
+
     <button onclick="saveAgent()">Save</button>
+
+    <hr>
+
+    <h3>Bulk Upload</h3>
+    <input type="file" id="bulkFile"><br>
+    <button onclick="bulkUpload()">Upload Excel</button>
+
+    <br><br>
     <button onclick="closeAdmin()">Close</button>
   </div>
 </div>
