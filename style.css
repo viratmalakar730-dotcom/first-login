@@ -1,0 +1,36 @@
+body{
+background:#0b1a2b;
+color:white;
+font-family:Arial;
+text-align:center;
+}
+h1{color:#ffd700;}
+button{
+background:#ffd700;
+padding:10px;
+margin:5px;
+border:none;
+border-radius:10px;
+box-shadow:0 4px 10px rgba(0,0,0,0.5);
+}
+table{
+width:100%;
+border-collapse:collapse;
+margin-top:20px;
+}
+th{
+background:#123c7a;
+color:white;
+padding:10px;
+}
+td{
+background:#eaeaea;
+color:black;
+padding:8px;
+border:1px solid #ccc;
+}
+.late{
+background:red;
+color:white;
+font-weight:bold;
+}
