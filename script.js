@@ -96,7 +96,22 @@ html += `<td>${a.id}</td><td>${a.name}</td><td>${a.shift}</td><td>${a.weekoff}</
 
 dates.forEach(d=>{
 let val = data[a.id]?.[d] || "";
+
+if(val){
+let [sh,sm] = a.shift.split(":").map(Number);
+let shiftMin = sh*60 + sm + 5;
+
+let [lh,lm] = val.split(":").map(Number);
+let loginMin = lh*60 + lm;
+
+if(loginMin > shiftMin){
+html += `<td class="late">${val}</td>`;
+}else{
 html += `<td>${val}</td>`;
+}
+}else{
+html += `<td></td>`;
+}
 });
 
 html += "</tr>";
