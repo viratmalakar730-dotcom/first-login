@@ -1,4 +1,3 @@
-// 🔐 Admin Panel
 function openAdmin(){
 let pass = prompt("Enter Password");
 if(pass==="8563"){
@@ -12,7 +11,7 @@ function closeAdmin(){
 document.getElementById("adminPanel").style.display="none";
 }
 
-// 💾 Save Agent (Manual)
+// SAVE AGENT
 function saveAgent(){
 let agents = JSON.parse(localStorage.getItem("agents")||"[]");
 
@@ -24,10 +23,10 @@ weekoff:weekoff.value
 });
 
 localStorage.setItem("agents",JSON.stringify(agents));
-alert("Agent Saved");
+alert("Saved");
 }
 
-// 📂 BULK UPLOAD
+// BULK UPLOAD
 function bulkUpload(){
 const file = document.getElementById('bulkFile').files[0];
 if(!file) return alert("Upload roster file");
@@ -52,13 +51,50 @@ weekoff: row["Week Off"]
 });
 
 localStorage.setItem("agents", JSON.stringify(agents));
-alert("Bulk Upload Success");
+alert("Bulk Upload Done");
 };
 
 reader.readAsArrayBuffer(file);
 }
 
-// 📂 Excel Processing
+// SHOW AGENTS LIST
+function showAgents(){
+let agents = JSON.parse(localStorage.getItem("agents")||"[]");
+
+let html = "<table><tr><th>ID</th><th>Name</th><th>Shift</th><th>Week Off</th><th>Edit</th><th>Delete</th></tr>";
+
+agents.forEach((a,i)=>{
+html += `<tr>
+<td>${a.id}</td>
+<td contenteditable="true" onblur="updateAgent(${i}, 'name', this.innerText)">${a.name}</td>
+<td contenteditable="true" onblur="updateAgent(${i}, 'shift', this.innerText)">${a.shift}</td>
+<td contenteditable="true" onblur="updateAgent(${i}, 'weekoff', this.innerText)">${a.weekoff}</td>
+<td>✏️</td>
+<td><button onclick="deleteAgent(${i})">Delete</button></td>
+</tr>`;
+});
+
+html += "</table>";
+
+tableContainer.innerHTML = html;
+}
+
+// UPDATE AGENT
+function updateAgent(index, field, value){
+let agents = JSON.parse(localStorage.getItem("agents"));
+agents[index][field] = value;
+localStorage.setItem("agents", JSON.stringify(agents));
+}
+
+// DELETE AGENT
+function deleteAgent(index){
+let agents = JSON.parse(localStorage.getItem("agents"));
+agents.splice(index,1);
+localStorage.setItem("agents", JSON.stringify(agents));
+showAgents();
+}
+
+// PROCESS LOGIN FILE
 function processFile(){
 const file = document.getElementById('fileInput').files[0];
 if(!file) return alert("Upload file");
@@ -73,7 +109,7 @@ const sheet = wb.Sheets[wb.SheetNames[0]];
 let raw = XLSX.utils.sheet_to_json(sheet,{header:1});
 raw.shift();
 
-let headers = raw[0].map(h => h.toString().toLowerCase().replace(/ /g,''));
+let headers = raw[0].map(h => h.toLowerCase().replace(/ /g,''));
 
 let idIndex = headers.findIndex(h => h.includes("user"));
 let dateIndex = headers.findIndex(h => h.includes("date"));
@@ -101,20 +137,17 @@ renderTable(result);
 reader.readAsArrayBuffer(file);
 }
 
-// 📊 Render Table
+// FINAL TABLE
 function renderTable(data){
-
 let agents = JSON.parse(localStorage.getItem("agents")||"[]");
 
 let dates = new Set();
 Object.values(data).forEach(d=>{
 Object.keys(d).forEach(x=>dates.add(x));
 });
-
 dates = Array.from(dates).sort();
 
 let html = "<table><tr><th>ID</th><th>Name</th><th>Shift</th><th>WO</th>";
-
 dates.forEach(d=>html += "<th>"+d+"</th>");
 html += "</tr>";
 
@@ -146,22 +179,17 @@ html += "</tr>";
 });
 
 html += "</table>";
-
-document.getElementById("tableContainer").innerHTML = html;
+tableContainer.innerHTML = html;
 }
 
-// 🔍 Search
 function filterTable(){
-let input = document.getElementById("search").value.toLowerCase();
-let rows = document.querySelectorAll("table tr");
-
-rows.forEach((row,i)=>{
-if(i===0) return;
-row.style.display = row.innerText.toLowerCase().includes(input) ? "" : "none";
+let v = search.value.toLowerCase();
+document.querySelectorAll("table tr").forEach((r,i)=>{
+if(i===0)return;
+r.style.display = r.innerText.toLowerCase().includes(v)?"":"none";
 });
 }
 
-// 🔄 Reset
 function resetPage(){
 location.reload();
 }
