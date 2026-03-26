@@ -1,3 +1,4 @@
+// 🔐 ADMIN PANEL
 function openAdmin(){
 let pass = prompt("Enter Password");
 if(pass==="8563"){
@@ -11,7 +12,7 @@ function closeAdmin(){
 document.getElementById("adminPanel").style.display="none";
 }
 
-// SAVE AGENT
+// 💾 SAVE AGENT (MANUAL)
 function saveAgent(){
 let agents = JSON.parse(localStorage.getItem("agents")||"[]");
 
@@ -23,10 +24,10 @@ weekoff:weekoff.value
 });
 
 localStorage.setItem("agents",JSON.stringify(agents));
-alert("Saved");
+alert("Agent Saved");
 }
 
-// BULK UPLOAD
+// 📂 BULK UPLOAD (SMART FIX)
 function bulkUpload(){
 const file = document.getElementById('bulkFile').files[0];
 if(!file) return alert("Upload roster file");
@@ -37,27 +38,40 @@ reader.onload = function(e){
 const data = new Uint8Array(e.target.result);
 const wb = XLSX.read(data,{type:'array'});
 const sheet = wb.Sheets[wb.SheetNames[0]];
+
 let json = XLSX.utils.sheet_to_json(sheet);
 
-let agents = JSON.parse(localStorage.getItem("agents")||"[]");
+let agents = [];
 
 json.forEach(row=>{
+
+// 🔍 SMART MATCH
+let id = row["Employee ID"] || row["Agent ID"] || row["UserName"];
+let name = row["Agent Name"] || row["Name"];
+let shift = row["Shift"] || row["Updated Shift"];
+let weekoff = row["Week Off"] || row["WeekOff"];
+
+if(id){
 agents.push({
-id: row["Employee ID"],
-name: row["Agent Name"],
-shift: row["Shift"],
-weekoff: row["Week Off"]
+id: id,
+name: name || "",
+shift: shift || "07:00",
+weekoff: weekoff || ""
 });
+}
+
 });
 
 localStorage.setItem("agents", JSON.stringify(agents));
-alert("Bulk Upload Done");
+
+alert("Bulk Upload Success ✅");
+showAgents();
 };
 
 reader.readAsArrayBuffer(file);
 }
 
-// SHOW AGENTS LIST
+// 📋 SHOW AGENTS LIST
 function showAgents(){
 let agents = JSON.parse(localStorage.getItem("agents")||"[]");
 
@@ -79,14 +93,14 @@ html += "</table>";
 tableContainer.innerHTML = html;
 }
 
-// UPDATE AGENT
+// ✏️ UPDATE AGENT
 function updateAgent(index, field, value){
 let agents = JSON.parse(localStorage.getItem("agents"));
 agents[index][field] = value;
 localStorage.setItem("agents", JSON.stringify(agents));
 }
 
-// DELETE AGENT
+// ❌ DELETE AGENT
 function deleteAgent(index){
 let agents = JSON.parse(localStorage.getItem("agents"));
 agents.splice(index,1);
@@ -94,7 +108,7 @@ localStorage.setItem("agents", JSON.stringify(agents));
 showAgents();
 }
 
-// PROCESS LOGIN FILE
+// 📂 LOGIN FILE PROCESS
 function processFile(){
 const file = document.getElementById('fileInput').files[0];
 if(!file) return alert("Upload file");
@@ -107,9 +121,12 @@ const wb = XLSX.read(data,{type:'array'});
 const sheet = wb.Sheets[wb.SheetNames[0]];
 
 let raw = XLSX.utils.sheet_to_json(sheet,{header:1});
+
+// REMOVE FIRST ROW
 raw.shift();
 
-let headers = raw[0].map(h => h.toLowerCase().replace(/ /g,''));
+// HEADER NORMALIZE
+let headers = raw[0].map(h => h.toString().toLowerCase().replace(/ /g,''));
 
 let idIndex = headers.findIndex(h => h.includes("user"));
 let dateIndex = headers.findIndex(h => h.includes("date"));
@@ -137,8 +154,9 @@ renderTable(result);
 reader.readAsArrayBuffer(file);
 }
 
-// FINAL TABLE
+// 📊 FINAL TABLE
 function renderTable(data){
+
 let agents = JSON.parse(localStorage.getItem("agents")||"[]");
 
 let dates = new Set();
@@ -148,6 +166,7 @@ Object.keys(d).forEach(x=>dates.add(x));
 dates = Array.from(dates).sort();
 
 let html = "<table><tr><th>ID</th><th>Name</th><th>Shift</th><th>WO</th>";
+
 dates.forEach(d=>html += "<th>"+d+"</th>");
 html += "</tr>";
 
@@ -182,6 +201,7 @@ html += "</table>";
 tableContainer.innerHTML = html;
 }
 
+// 🔍 SEARCH
 function filterTable(){
 let v = search.value.toLowerCase();
 document.querySelectorAll("table tr").forEach((r,i)=>{
@@ -190,6 +210,7 @@ r.style.display = r.innerText.toLowerCase().includes(v)?"":"none";
 });
 }
 
+// 🔄 RESET
 function resetPage(){
 location.reload();
 }
