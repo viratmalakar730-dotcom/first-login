@@ -36,7 +36,7 @@ alert("Added ✅");
 loadRoster();
 }
 
-// 📂 BULK UPLOAD
+// 📂 BULK UPLOAD (SMART)
 function uploadRoster(){
 
 let file = rosterFile.files[0];
@@ -53,13 +53,19 @@ let r = {};
 
 json.forEach(x => {
 
-let id = x["Employee ID"] || x["Agent ID"] || x["ID"];
-let name = x["Agent Name"] || x["Name"];
-let shift = (x["Shift"] || "").toString().slice(0,5);
-let wo = x["Week Off"];
+let keys = Object.keys(x);
+
+let id = x[keys.find(k => k.toLowerCase().includes("id"))];
+let name = x[keys.find(k => k.toLowerCase().includes("name"))];
+let shift = x[keys.find(k => k.toLowerCase().includes("shift"))];
+let wo = x[keys.find(k => k.toLowerCase().includes("week"))];
 
 if(id){
-r[id] = { name, shift, wo };
+r[id] = {
+name: name || "",
+shift: (shift || "").toString().slice(0,5),
+wo: wo || ""
+};
 }
 
 });
@@ -72,7 +78,7 @@ loadRoster();
 reader.readAsArrayBuffer(file);
 }
 
-// 👀 LOAD TABLE (WITH MULTI SELECT)
+// 👀 LOAD ROSTER TABLE
 function loadRoster(){
 
 let r = getRoster();
@@ -170,7 +176,7 @@ loadRoster();
 }
 }
 
-// 📂 LOGIN PROCESS
+// 📂 LOGIN PROCESS (NAME FIXED)
 function processFile(){
 
 let file = fileInput.files[0];
@@ -185,11 +191,19 @@ let raw = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {header:1});
 
 raw = raw.filter(r=>r.some(c=>c));
 
+// 🔥 HEADER DETECT
 let h = raw.find(r => r.join().toLowerCase().includes("user"));
 let headers = h.map(x=>x.toLowerCase());
 
+// 🔥 FIXED INDEX
 let idI = headers.findIndex(x=>x.includes("user"));
-let nameI = headers.findIndex(x=>x.includes("name"));
+
+let nameI = headers.findIndex(x =>
+x.includes("full name") ||
+x.includes("agent name") ||
+x.includes("name")
+);
+
 let dateI = headers.findIndex(x=>x.includes("date"));
 let typeI = headers.findIndex(x=>x.includes("event"));
 
@@ -206,7 +220,7 @@ let type=(r[typeI]||"").toLowerCase();
 
 if(!id || !dt) return;
 
-names[id]=name;
+names[id]=name || id;
 
 if(type.includes("login")){
 let d=dt.toISOString().split('T')[0];
