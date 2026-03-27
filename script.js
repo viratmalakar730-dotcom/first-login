@@ -1,226 +1,104 @@
-// 🔐 NAVIGATION
+// NAVIGATION
 function goRoster(){
 let p = prompt("Enter Password");
-if(p==="8563"){
-window.location.href="roster.html";
-}else{
-alert("Wrong Password");
-}
+if(p==="8563") window.location="roster.html";
 }
 
-function goBack(){
-window.location.href="index.html";
-}
-
-// 📥 GET / SAVE
+// STORAGE
 function getRoster(){
 return JSON.parse(localStorage.getItem("roster")||"{}");
 }
-
-function setRoster(data){
-localStorage.setItem("roster", JSON.stringify(data));
+function setRoster(d){
+localStorage.setItem("roster",JSON.stringify(d));
 }
 
-// ➕ ADD AGENT
+// ADD AGENT
 function addRoster(){
-let r = getRoster();
+let r=getRoster();
 
-r[rid.value] = {
-name: rname.value,
-shift: rshift.value.slice(0,5),
-wo: rwo.value
+r[rid.value]={
+name:rname.value,
+shift:rshift.value
 };
 
 setRoster(r);
-alert("Added ✅");
 loadRoster();
 }
 
-// 📂 BULK UPLOAD (SMART)
+// BULK UPLOAD
 function uploadRoster(){
 
-let file = rosterFile.files[0];
-if(!file) return alert("Select file");
+let f=rosterFile.files[0];
+let reader=new FileReader();
 
-let reader = new FileReader();
+reader.onload=e=>{
+let wb=XLSX.read(new Uint8Array(e.target.result),{type:'array'});
+let json=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
 
-reader.onload = function(e){
+let r={};
 
-let wb = XLSX.read(new Uint8Array(e.target.result), {type:'array'});
-let json = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
+json.forEach(x=>{
+let id=x["Employee ID"];
 
-let r = {};
-
-json.forEach(x => {
-
-let keys = Object.keys(x);
-
-let id = x[keys.find(k => k.toLowerCase().includes("id"))];
-let name = x[keys.find(k => k.toLowerCase().includes("name"))];
-let shift = x[keys.find(k => k.toLowerCase().includes("shift"))];
-let wo = x[keys.find(k => k.toLowerCase().includes("week"))];
-
-if(id){
-r[id] = {
-name: name || "",
-shift: (shift || "").toString().slice(0,5),
-wo: wo || ""
+r[id]={
+name:x["Agent Name"],
+shift:x["Shift"]
 };
-}
-
 });
 
 setRoster(r);
-alert("Bulk Upload Done ✅");
 loadRoster();
 };
 
-reader.readAsArrayBuffer(file);
+reader.readAsArrayBuffer(f);
 }
 
-// 👀 LOAD ROSTER TABLE
+// LOAD ROSTER
 function loadRoster(){
+let r=getRoster();
 
-let r = getRoster();
-
-let html = `
-<table>
-<tr>
-<th><input type="checkbox" onclick="selectAll(this)"></th>
-<th>ID</th>
-<th>Name</th>
-<th>Shift</th>
-<th>Week Off</th>
-<th>Edit</th>
-<th>Delete</th>
-</tr>
-`;
+let html="<table><tr><th>ID</th><th>Name</th><th>Shift</th></tr>";
 
 Object.keys(r).forEach(id=>{
-
-html += `
-<tr>
-<td><input type="checkbox" class="rowCheck" value="${id}"></td>
+html+=`<tr>
 <td>${id}</td>
-<td>${r[id].name || ""}</td>
-<td>${r[id].shift || ""}</td>
-<td>${r[id].wo || ""}</td>
-<td><button onclick="editAgent('${id}')">✏️</button></td>
-<td><button onclick="deleteAgent('${id}')">❌</button></td>
-</tr>
-`;
-
+<td>${r[id].name}</td>
+<td>${r[id].shift}</td>
+</tr>`;
 });
 
-html += "</table>";
-html += `<br><button onclick="deleteSelected()">Delete Selected</button>`;
-
-document.getElementById("rosterTable").innerHTML = html;
+html+="</table>";
+rosterTable.innerHTML=html;
 }
 
-// ☑ SELECT ALL
-function selectAll(source){
-document.querySelectorAll(".rowCheck").forEach(cb=>{
-cb.checked = source.checked;
-});
-}
-
-// ❌ BULK DELETE
-function deleteSelected(){
-
-let r = getRoster();
-let selected = document.querySelectorAll(".rowCheck:checked");
-
-if(selected.length === 0){
-alert("Select at least one agent");
-return;
-}
-
-if(!confirm("Delete selected agents?")) return;
-
-selected.forEach(cb=>{
-delete r[cb.value];
-});
-
-setRoster(r);
-loadRoster();
-
-alert("Deleted Successfully ✅");
-}
-
-// ✏️ EDIT
-function editAgent(id){
-
-let r = getRoster();
-let a = r[id];
-
-let name = prompt("Name", a.name);
-let shift = prompt("Shift (07:00)", a.shift);
-let wo = prompt("Week Off", a.wo);
-
-r[id] = {name, shift, wo};
-
-setRoster(r);
-loadRoster();
-}
-
-// ❌ DELETE SINGLE
-function deleteAgent(id){
-
-let r = getRoster();
-
-if(confirm("Delete agent?")){
-delete r[id];
-setRoster(r);
-loadRoster();
-}
-}
-
-// 📂 LOGIN PROCESS
+// PROCESS LOGIN FILE
 function processFile(){
 
-let file = fileInput.files[0];
-if(!file) return alert("Upload file");
+let f=fileInput.files[0];
+let reader=new FileReader();
 
-let reader = new FileReader();
+reader.onload=e=>{
 
-reader.onload = function(e){
+let wb=XLSX.read(new Uint8Array(e.target.result),{type:'array'});
+let raw=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1});
 
-let wb = XLSX.read(new Uint8Array(e.target.result), {type:'array'});
-let raw = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {header:1});
+let h=raw[0].map(x=>x.toLowerCase());
 
-raw = raw.filter(r=>r.some(c=>c));
+let idI=h.findIndex(x=>x.includes("user"));
+let nameI=h.findIndex(x=>x.includes("name"));
+let dateI=h.findIndex(x=>x.includes("date"));
+let typeI=h.findIndex(x=>x.includes("event"));
 
-// HEADER DETECT
-let h = raw.find(r => r.join().toLowerCase().includes("user"));
-let headers = h.map(x=>x.toLowerCase());
+let data={},names={};
 
-let idI = headers.findIndex(x=>x.includes("user"));
-
-let nameI = headers.findIndex(x =>
-x.includes("full name") ||
-x.includes("agent name") ||
-x.includes("name")
-);
-
-let dateI = headers.findIndex(x=>x.includes("date"));
-let typeI = headers.findIndex(x=>x.includes("event"));
-
-let start = raw.indexOf(h)+1;
-
-let data={}, names={};
-
-raw.slice(start).forEach(r=>{
+raw.slice(1).forEach(r=>{
 
 let id=r[idI];
 let name=r[nameI];
 let dt=new Date(r[dateI]);
 let type=(r[typeI]||"").toLowerCase();
 
-if(!id || !dt) return;
-
-// fallback
-names[id]=name || id;
+names[id]=name;
 
 if(type.includes("login")){
 let d=dt.toISOString().split('T')[0];
@@ -232,38 +110,36 @@ if(!data[id][d]) data[id][d]=t;
 
 });
 
-localStorage.setItem("loginData", JSON.stringify(data));
-localStorage.setItem("agentNames", JSON.stringify(names));
+localStorage.setItem("loginData",JSON.stringify(data));
+localStorage.setItem("agentNames",JSON.stringify(names));
 
-window.location.href="dashboard.html";
+window.location="dashboard.html";
 };
 
-reader.readAsArrayBuffer(file);
+reader.readAsArrayBuffer(f);
 }
 
-// 📊 TABLE (FINAL FIX)
-function renderTable(data, names){
+// RENDER TABLE
+function renderTable(data,names){
 
-let roster = getRoster();
+let roster=getRoster();
 
-let dates = new Set();
+let dates=new Set();
 Object.values(data).forEach(d=>{
 Object.keys(d).forEach(x=>dates.add(x));
 });
-dates = [...dates].sort();
+dates=[...dates].sort();
 
-let html = "<table><tr><th>ID</th><th>Name</th><th>Shift</th><th>WO</th>";
+let html="<table><tr><th>ID</th><th>Name</th><th>Shift</th>";
 
 dates.forEach(d=>{
-
 let dt=new Date(d);
 let day=dt.toLocaleDateString('en-US',{weekday:'long'});
-
 let dd=String(dt.getDate()).padStart(2,'0');
 let mm=String(dt.getMonth()+1).padStart(2,'0');
 let yyyy=dt.getFullYear();
 
-html += `<th>${day}<br>${dd}-${mm}-${yyyy}</th>`;
+html+=`<th>${day}<br>${dd}-${mm}-${yyyy}</th>`;
 });
 
 html+="</tr>";
@@ -274,9 +150,8 @@ let r=roster[id]||{};
 
 html+=`<tr>
 <td>${id}</td>
-<td>${(roster[id]?.name) || names[id] || id}</td>
+<td>${r.name || names[id] || id}</td>
 <td>${r.shift||""}</td>
-<td>${r.wo||""}</td>
 `;
 
 dates.forEach(d=>{
@@ -296,15 +171,7 @@ html += loginMin>shiftMin
 : `<td>${val}</td>`;
 
 }else{
-
-let day=new Date(d).toLocaleDateString('en-US',{weekday:'long'});
-
-if(r.wo===day){
-html+=`<td class="wo">WO</td>`;
-}else{
 html+=`<td></td>`;
-}
-
 }
 
 });
@@ -317,11 +184,21 @@ html+="</table>";
 document.getElementById("tableContainer").innerHTML=html;
 }
 
-// 🔍 SEARCH
+// SEARCH
 function filterTable(){
-let v = document.getElementById("search").value.toLowerCase();
+let v=document.getElementById("search").value.toLowerCase();
 document.querySelectorAll("table tr").forEach((r,i)=>{
 if(i===0)return;
-r.style.display = r.innerText.toLowerCase().includes(v)?"":"none";
+r.style.display=r.innerText.toLowerCase().includes(v)?"":"none";
+});
+}
+
+// COPY PNG
+function copyPNG(){
+html2canvas(document.getElementById("tableContainer")).then(canvas=>{
+let link=document.createElement("a");
+link.download="report.png";
+link.href=canvas.toDataURL();
+link.click();
 });
 }
