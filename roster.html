@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Roster Management</title>
+<link rel="stylesheet" href="style.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+
+<body>
+
+<h1>Roster Management</h1>
+
+<div class="roster-top">
+
+<input id="rid" placeholder="Employee ID">
+<input id="rname" placeholder="Agent Name">
+<input id="rshift" placeholder="Shift (07:00)">
+<input id="rwo" placeholder="Week Off">
+
+<button onclick="addRoster()">Add Agent</button>
+
+<input type="file" id="rosterFile">
+<button onclick="uploadRoster()">Bulk Upload</button>
+
+<button onclick="loadRoster()">Refresh</button>
+
+</div>
+
+<div id="rosterTable"></div>
+
+<br>
+<button onclick="goBack()">⬅ Back</button>
+
+<script src="script.js"></script>
+
+<script>
+window.onload = loadRoster;
+</script>
+
+</body>
+</html>
