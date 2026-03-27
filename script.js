@@ -176,7 +176,7 @@ loadRoster();
 }
 }
 
-// 📂 LOGIN PROCESS (NAME FIXED)
+// 📂 LOGIN PROCESS
 function processFile(){
 
 let file = fileInput.files[0];
@@ -191,11 +191,10 @@ let raw = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {header:1});
 
 raw = raw.filter(r=>r.some(c=>c));
 
-// 🔥 HEADER DETECT
+// HEADER DETECT
 let h = raw.find(r => r.join().toLowerCase().includes("user"));
 let headers = h.map(x=>x.toLowerCase());
 
-// 🔥 FIXED INDEX
 let idI = headers.findIndex(x=>x.includes("user"));
 
 let nameI = headers.findIndex(x =>
@@ -220,6 +219,7 @@ let type=(r[typeI]||"").toLowerCase();
 
 if(!id || !dt) return;
 
+// fallback
 names[id]=name || id;
 
 if(type.includes("login")){
@@ -241,7 +241,7 @@ window.location.href="dashboard.html";
 reader.readAsArrayBuffer(file);
 }
 
-// 📊 TABLE
+// 📊 TABLE (FINAL FIX)
 function renderTable(data, names){
 
 let roster = getRoster();
@@ -274,7 +274,7 @@ let r=roster[id]||{};
 
 html+=`<tr>
 <td>${id}</td>
-<td>${names[id]||""}</td>
+<td>${(roster[id]?.name) || names[id] || id}</td>
 <td>${r.shift||""}</td>
 <td>${r.wo||""}</td>
 `;
