@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Dashboard</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<h1>Dashboard</h1>
+
+<input type="text" id="search" placeholder="Search..." onkeyup="filterTable()">
+
+<div id="tableContainer"></div>
+
+<script src="script.js"></script>
+<script>
+window.onload = function(){
+let data = JSON.parse(localStorage.getItem("loginData"));
+let names = JSON.parse(localStorage.getItem("agentNames"));
+renderTable(data, names);
+}
+</script>
+
+</body>
+</html>

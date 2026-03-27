@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Upload Report</title>
+<link rel="stylesheet" href="style.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body>
+
+<h1>Upload Login Report</h1>
+
+<button class="roster-btn" onclick="openRoster()">Roster</button>
+
+<div class="upload-box">
+<input type="file" id="fileInput">
+<button onclick="processFile()">Generate Report</button>
+</div>
+
+<div id="rosterPanel" class="modal">
+<div class="modal-content">
+<h2>Roster</h2>
+
+<input id="rid" placeholder="Employee ID"><br>
+<input id="rname" placeholder="Agent Name"><br>
+<input id="rshift" placeholder="Shift"><br>
+<input id="rwo" placeholder="Week Off"><br>
+
+<button onclick="addRoster()">Add</button>
+
+<hr>
+
+<input type="file" id="rosterFile">
+<button onclick="uploadRoster()">Bulk Upload</button>
+
+<hr>
+<button onclick="viewRoster()">View</button>
+<button onclick="closeRoster()">Close</button>
+
+</div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
