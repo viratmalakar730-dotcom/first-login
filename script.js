@@ -1,8 +1,144 @@
-function openRoster(){let p=prompt("Password");if(p==="8563") rosterPanel.style.display="block";}
-function closeRoster(){rosterPanel.style.display="none";}
-function addRoster(){let r=JSON.parse(localStorage.getItem("roster")||"{}");r[rid.value]={name:rname.value,shift:rshift.value,wo:rwo.value};localStorage.setItem("roster",JSON.stringify(r));alert("Added");}
-function uploadRoster(){let file=rosterFile.files[0];let reader=new FileReader();reader.onload=e=>{let wb=XLSX.read(new Uint8Array(e.target.result),{type:'array'});let json=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);let r={};json.forEach(x=>{r[x["Employee ID"]]={name:x["Agent Name"],shift:x["Shift"],wo:x["Week Off"]};});localStorage.setItem("roster",JSON.stringify(r));alert("Uploaded");};reader.readAsArrayBuffer(file);}
-function viewRoster(){let r=JSON.parse(localStorage.getItem("roster")||"{}");let html="<table><tr><th>ID</th><th>Name</th><th>Shift</th><th>WO</th></tr>";Object.keys(r).forEach(id=>{html+=`<tr><td>${id}</td><td>${r[id].name}</td><td>${r[id].shift}</td><td>${r[id].wo}</td></tr>`;});html+="</table>";document.body.innerHTML=html;}
-function processFile(){let file=fileInput.files[0];let reader=new FileReader();reader.onload=e=>{let wb=XLSX.read(new Uint8Array(e.target.result),{type:'array'});let raw=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1});raw=raw.filter(r=>r.some(c=>c));let h=raw.find(r=>r.join().toLowerCase().includes("user"));let headers=h.map(x=>x.toLowerCase());let idI=headers.findIndex(x=>x.includes("user"));let nameI=headers.findIndex(x=>x.includes("name"));let dateI=headers.findIndex(x=>x.includes("date"));let typeI=headers.findIndex(x=>x.includes("event"));let start=raw.indexOf(h)+1;let data={},names={};raw.slice(start).forEach(r=>{let id=r[idI];let name=r[nameI];let dt=new Date(r[dateI]);let type=(r[typeI]||"").toLowerCase();if(!id||!dt)return;names[id]=name;if(type.includes("login")){let d=dt.toISOString().split('T')[0];let t=dt.toTimeString().split(" ")[0];if(!data[id])data[id]={};if(!data[id][d])data[id][d]=t;}});localStorage.setItem("loginData",JSON.stringify(data));localStorage.setItem("agentNames",JSON.stringify(names));location.href="dashboard.html";};reader.readAsArrayBuffer(file);}
-function renderTable(data,names){let roster=JSON.parse(localStorage.getItem("roster")||"{}");let dates=new Set();Object.values(data).forEach(d=>Object.keys(d).forEach(x=>dates.add(x)));dates=[...dates].sort();let html="<table><tr><th>ID</th><th>Name</th><th>Shift</th><th>WO</th>";dates.forEach(d=>{let dt=new Date(d);let day=dt.toLocaleDateString('en-US',{weekday:'long'});let dd=String(dt.getDate()).padStart(2,'0');let mm=String(dt.getMonth()+1).padStart(2,'0');let yyyy=dt.getFullYear();html+=`<th>${day}<br>${dd}-${mm}-${yyyy}</th>`;});html+="</tr>";Object.keys(data).forEach(id=>{let r=roster[id]||{};html+=`<tr><td>${id}</td><td>${names[id]||""}</td><td>${r.shift||""}</td><td>${r.wo||""}</td>`;dates.forEach(d=>{let val=data[id][d];if(val){let [sh,sm]=(r.shift||"07:00").split(":").map(Number);let shiftMin=sh*60+sm+5;let [lh,lm]=val.split(":").map(Number);let loginMin=lh*60+lm;html+=loginMin>shiftMin?`<td class='late'>${val}</td>`:`<td>${val}</td>`;}else{let day=new Date(d).toLocaleDateString('en-US',{weekday:'long'});if(r.wo===day) html+="<td class='wo'>WO</td>";else html+="<td></td>";}});html+="</tr>";});html+="</table>";tableContainer.innerHTML=html;}
-function filterTable(){let v=document.getElementById("search").value.toLowerCase();document.querySelectorAll("tr").forEach((r,i)=>{if(i===0)return;r.style.display=r.innerText.toLowerCase().includes(v)?"":"none";});}
+// 🔐 OPEN ROSTER
+function openRoster(){
+let p = prompt("Password");
+if(p==="8563"){
+rosterPanel.style.display="block";
+}else{
+alert("Wrong Password");
+}
+}
+
+function closeRoster(){
+rosterPanel.style.display="none";
+}
+
+// 📥 GET ROSTER
+function getRoster(){
+return JSON.parse(localStorage.getItem("roster")||"{}");
+}
+
+// 💾 SAVE ROSTER
+function setRoster(data){
+localStorage.setItem("roster", JSON.stringify(data));
+}
+
+// ➕ ADD AGENT
+function addRoster(){
+let r = getRoster();
+
+r[rid.value] = {
+name: rname.value,
+shift: rshift.value.slice(0,5),
+wo: rwo.value
+};
+
+setRoster(r);
+alert("Added ✅");
+viewRoster();
+}
+
+// 📂 BULK UPLOAD FIXED
+function uploadRoster(){
+
+let file = rosterFile.files[0];
+if(!file) return alert("Select file");
+
+let reader = new FileReader();
+
+reader.onload = function(e){
+
+let wb = XLSX.read(new Uint8Array(e.target.result), {type:'array'});
+let json = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
+
+let r = getRoster();
+
+// 🔥 FIX: correct column mapping
+json.forEach(x => {
+
+let id = x["Employee ID"] || x["Agent ID"];
+let name = x["Agent Name"] || x["Name"];
+let shift = (x["Shift"] || "").toString().slice(0,5);
+let wo = x["Week Off"] || x["WeekOff"];
+
+if(id){
+r[id] = { name, shift, wo };
+}
+
+});
+
+setRoster(r);
+
+alert("Bulk Upload Done ✅");
+viewRoster();
+};
+
+reader.readAsArrayBuffer(file);
+}
+
+// 👀 VIEW ROSTER (TABLE FORMAT)
+function viewRoster(){
+
+let r = getRoster();
+
+let html = `
+<table>
+<tr>
+<th>ID</th>
+<th>Name</th>
+<th>Shift</th>
+<th>Week Off</th>
+<th>Edit</th>
+<th>Delete</th>
+</tr>
+`;
+
+Object.keys(r).forEach(id=>{
+
+html += `
+<tr>
+<td>${id}</td>
+<td>${r[id].name || ""}</td>
+<td>${r[id].shift || ""}</td>
+<td>${r[id].wo || ""}</td>
+
+<td><button onclick="editAgent('${id}')">✏️</button></td>
+<td><button onclick="deleteAgent('${id}')">❌</button></td>
+</tr>
+`;
+
+});
+
+html += "</table>";
+
+document.querySelector(".modal-content").innerHTML = html + `
+<br><button onclick="closeRoster()">Close</button>
+`;
+}
+
+// ✏️ EDIT
+function editAgent(id){
+
+let r = getRoster();
+let a = r[id];
+
+let name = prompt("Edit Name", a.name);
+let shift = prompt("Edit Shift (07:00)", a.shift);
+let wo = prompt("Edit Week Off", a.wo);
+
+r[id] = {name, shift, wo};
+
+setRoster(r);
+viewRoster();
+}
+
+// ❌ DELETE
+function deleteAgent(id){
+
+let r = getRoster();
+
+if(confirm("Delete this agent?")){
+delete r[id];
+setRoster(r);
+viewRoster();
+}
+}
