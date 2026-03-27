@@ -2,11 +2,17 @@ body{
 background:#081b2e;
 font-family:Segoe UI;
 color:white;
+text-align:center;
+}
+
+h1{
+color:#ffd700;
 }
 
 /* TABLE */
 table{
-width:100%;
+width:95%;
+margin:auto;
 border-collapse:collapse;
 background:#f1f1f1;
 color:black;
@@ -17,37 +23,12 @@ th{
 background:#1f4a8a;
 color:white;
 padding:12px;
-font-size:15px;
 border:2px solid #0a1f3d;
 }
 
 td{
 padding:10px;
 border:2px solid #444;
-text-align:center;
-}
-
-/* 3D GREEN */
-.green{
-background:linear-gradient(145deg,#00d26a,#00a851);
-color:white;
-font-weight:bold;
-box-shadow:0 4px 10px rgba(0,0,0,0.5);
-}
-
-/* 3D RED */
-.late{
-background:linear-gradient(145deg,#ff4d4d,#c40000);
-color:white;
-font-weight:bold;
-box-shadow:0 4px 10px rgba(0,0,0,0.5);
-}
-
-/* WEEK OFF */
-.wo{
-background:#008000;
-color:white;
-font-weight:bold;
 }
 
 /* BUTTON */
@@ -61,15 +42,18 @@ cursor:pointer;
 box-shadow:0 4px 8px rgba(0,0,0,0.5);
 }
 
-button:hover{
-transform:scale(1.05);
-}
-
 /* SEARCH */
 #search{
 padding:10px;
 width:250px;
 border-radius:10px;
-border:none;
-margin-right:10px;
+margin-bottom:10px;
+}
+
+/* LATE (RED 3D) */
+.late{
+background:linear-gradient(145deg,#ff4d4d,#c40000);
+color:white;
+font-weight:bold;
+box-shadow:0 4px 10px rgba(0,0,0,0.6);
 }
