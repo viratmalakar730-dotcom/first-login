@@ -1,41 +1,27 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Roster Management</title>
 <link rel="stylesheet" href="style.css">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 
 <body>
 
-<h1>Roster Management</h1>
+<h1>Login Dashboard</h1>
 
-<div class="roster-top">
+<input type="text" id="search" placeholder="Search Agent..." onkeyup="filterTable()">
+<button onclick="copyPNG()">Copy PNG</button>
 
-<input id="rid" placeholder="Employee ID">
-<input id="rname" placeholder="Agent Name">
-<input id="rshift" placeholder="Shift (07:00)">
-<input id="rwo" placeholder="Week Off">
+<div id="tableContainer"></div>
 
-<button onclick="addRoster()">Add Agent</button>
-
-<input type="file" id="rosterFile">
-<button onclick="uploadRoster()">Bulk Upload</button>
-
-<button onclick="loadRoster()">Refresh</button>
-
-</div>
-
-<div id="rosterTable"></div>
-
-<br>
-<button onclick="goBack()">⬅ Back</button>
+</body>
 
 <script src="script.js"></script>
 
 <script>
-window.onload = loadRoster;
+renderTable(
+JSON.parse(localStorage.getItem("loginData")),
+JSON.parse(localStorage.getItem("agentNames"))
+);
 </script>
 
-</body>
 </html>
