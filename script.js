@@ -1,4 +1,4 @@
-// 🔐 ROSTER PAGE NAV
+// 🔐 NAVIGATION
 function goRoster(){
 let p = prompt("Enter Password");
 if(p==="8563"){
@@ -21,9 +21,8 @@ function setRoster(data){
 localStorage.setItem("roster", JSON.stringify(data));
 }
 
-// ➕ ADD
+// ➕ ADD AGENT
 function addRoster(){
-
 let r = getRoster();
 
 r[rid.value] = {
@@ -54,8 +53,8 @@ let r = {};
 
 json.forEach(x => {
 
-let id = x["Employee ID"];
-let name = x["Agent Name"];
+let id = x["Employee ID"] || x["Agent ID"] || x["ID"];
+let name = x["Agent Name"] || x["Name"];
 let shift = (x["Shift"] || "").toString().slice(0,5);
 let wo = x["Week Off"];
 
@@ -73,7 +72,7 @@ loadRoster();
 reader.readAsArrayBuffer(file);
 }
 
-// 👀 LOAD TABLE
+// 👀 LOAD TABLE (WITH MULTI SELECT)
 function loadRoster(){
 
 let r = getRoster();
@@ -81,6 +80,7 @@ let r = getRoster();
 let html = `
 <table>
 <tr>
+<th><input type="checkbox" onclick="selectAll(this)"></th>
 <th>ID</th>
 <th>Name</th>
 <th>Shift</th>
@@ -94,11 +94,11 @@ Object.keys(r).forEach(id=>{
 
 html += `
 <tr>
+<td><input type="checkbox" class="rowCheck" value="${id}"></td>
 <td>${id}</td>
 <td>${r[id].name || ""}</td>
 <td>${r[id].shift || ""}</td>
 <td>${r[id].wo || ""}</td>
-
 <td><button onclick="editAgent('${id}')">✏️</button></td>
 <td><button onclick="deleteAgent('${id}')">❌</button></td>
 </tr>
@@ -107,8 +107,39 @@ html += `
 });
 
 html += "</table>";
+html += `<br><button onclick="deleteSelected()">Delete Selected</button>`;
 
 document.getElementById("rosterTable").innerHTML = html;
+}
+
+// ☑ SELECT ALL
+function selectAll(source){
+document.querySelectorAll(".rowCheck").forEach(cb=>{
+cb.checked = source.checked;
+});
+}
+
+// ❌ BULK DELETE
+function deleteSelected(){
+
+let r = getRoster();
+let selected = document.querySelectorAll(".rowCheck:checked");
+
+if(selected.length === 0){
+alert("Select at least one agent");
+return;
+}
+
+if(!confirm("Delete selected agents?")) return;
+
+selected.forEach(cb=>{
+delete r[cb.value];
+});
+
+setRoster(r);
+loadRoster();
+
+alert("Deleted Successfully ✅");
 }
 
 // ✏️ EDIT
@@ -118,7 +149,7 @@ let r = getRoster();
 let a = r[id];
 
 let name = prompt("Name", a.name);
-let shift = prompt("Shift", a.shift);
+let shift = prompt("Shift (07:00)", a.shift);
 let wo = prompt("Week Off", a.wo);
 
 r[id] = {name, shift, wo};
@@ -127,7 +158,7 @@ setRoster(r);
 loadRoster();
 }
 
-// ❌ DELETE
+// ❌ DELETE SINGLE
 function deleteAgent(id){
 
 let r = getRoster();
@@ -219,7 +250,6 @@ let mm=String(dt.getMonth()+1).padStart(2,'0');
 let yyyy=dt.getFullYear();
 
 html += `<th>${day}<br>${dd}-${mm}-${yyyy}</th>`;
-
 });
 
 html+="</tr>";
@@ -266,7 +296,6 @@ html+=`<td></td>`;
 });
 
 html+="</tr>";
-
 });
 
 html+="</table>";
