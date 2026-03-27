@@ -1,23 +1,25 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Upload Login Report</title>
+<title>First Login Tracker</title>
 <link rel="stylesheet" href="style.css">
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
 
 <body>
 
-<h1>Upload Login Report</h1>
+<h1>Agent First Login Tracker</h1>
 
-<button class="roster-btn" onclick="goRoster()">Roster</button>
+<button onclick="goRoster()">Roster</button>
 
-<div class="upload-box">
+<br><br>
+
 <input type="file" id="fileInput">
 <button onclick="processFile()">Generate Report</button>
-</div>
-
-<script src="script.js"></script>
 
 </body>
+
+<script src="script.js"></script>
 </html>
